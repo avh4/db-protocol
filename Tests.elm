@@ -17,24 +17,25 @@ linearTest =
 processTest =
     let
         process' = process { foodResponse = linear 2, insulinResponse = linear 5 }
+        check fn (h0,h1) data e = assertEqual (process' data (time h0 0) (time h1 0) |> fn) e
     in suite "calculating food"
         [ test "no food" <|
-            assertEqual (process' [] (time 9 0) (time 10 0) |> .food) 0
+            check .food (9,10) [] 0
         , test "food fully released in the range" <|
-            assertEqual (process' [ Food (time 9 0) 50 ] (time 0 0) (time 24 0) |> .food) 50
+            check .food (0,24) [ Food (time 9 0) 50 ] 50
         , test "multiple foods combine" <|
-            assertEqual (process' [ Food (time 9 0) 13, Food (time 10 0) 8] (time 0 0) (time 24 0) |> .food) 21
+            check .food (0,24) [ Food (time 9 0) 13, Food (time 10 0) 8 ] 21
         , test "recent food absorption" <|
-            assertEqual (process' [ Food (time 9 0) 100 ] (time 9 0) (time 10 0) |> .food) 50
+            check .food (9,10) [ Food (time 9 0) 100 ] 50
         , test "old food absorption" <|
-            assertEqual (process' [ Food (time 9 0) 100 ] (time 10 0) (time 11 0) |> .food) 50
+            check .food (10,11) [ Food (time 9 0) 100 ] 50
         , test "when food is later" <|
-            assertEqual (process' [ Food (time 9 0) 100 ] (time 8 0) (time 9 0) |> .food) 0
+            check .food (8,9) [ Food (time 9 0) 100 ] 0
 
         , test "no bolus" <|
-            assertEqual (process' [] (time 9 0) (time 10 0) |> .insulin) 0
+            check .insulin (9,10) [] 0
         , test "bolus fully released in the range" <|
-            assertEqual (process' [ Bolus (time 9 0) 1.0 ] (time 0 0) (time 24 0) |> .insulin) 1.0
+            check .insulin (0,24) [ Bolus (time 9 0) 1.0 ] 1.0
         ]
 
 all : Test
