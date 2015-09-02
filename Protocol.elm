@@ -1,10 +1,10 @@
 module Protocol where
 
-type alias Time = Int
-type alias Duration = Int
+type alias Time = Float
+type alias Duration = Float
 
 time : Int -> Int -> Time
-time h m = h
+time h m = (toFloat h) + (toFloat m) / 60
 
 between : Time -> Time -> Duration
 between a b = (b - a)
@@ -16,7 +16,7 @@ response impulse (start, end) =
     (impulse end) - (impulse start)
 
 linear : Duration -> Impulse
-linear length t = (toFloat t) / (toFloat length) |> max 0 |> min 1
+linear length t = t / length |> max 0 |> min 1
 
 process config data start end =
     let
