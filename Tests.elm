@@ -24,8 +24,12 @@ processTest =
             assertEqual (process' [ Food (time 9) 50 ] (time 0) (time 24) |> .food) 50
         , test "multiple foods combine" <|
             assertEqual (process' [ Food (time 9) 13, Food (time 10) 8] (time 0) (time 24) |> .food) 21
-        , test "food absorption" <|
+        , test "recent food absorption" <|
             assertEqual (process' [ Food (time 9) 100 ] (time 9) (time 10) |> .food) 50
+        , test "old food absorption" <|
+            assertEqual (process' [ Food (time 9) 100 ] (time 10) (time 11) |> .food) 50
+        , test "when food is later" <|
+            assertEqual (process' [ Food (time 9) 100 ] (time 8) (time 9) |> .food) 0
         ]
 
 all : Test

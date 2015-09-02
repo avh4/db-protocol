@@ -10,6 +10,7 @@ data =
     [ Food (time  9) 50
     , Food (time 11) 15
     , Food (time 12) 50
+    , Food (time 17) 25
     ]
 
 main =
