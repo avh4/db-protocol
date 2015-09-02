@@ -3,6 +3,7 @@ module Main where
 import Protocol exposing (..)
 import Table
 import Number.Format
+import Html
 
 config =
     { foodResponse = linear 2
@@ -28,7 +29,7 @@ data =
     , Bolus (time 21 52) 1.67
     ]
 
-main =
+hourlyView =
     let
         p i = process config data (time i 0) (time (i+1) 0)
     in
@@ -38,3 +39,36 @@ main =
             , ("Food", p >> .food >> Number.Format.pretty 1 ',')
             , ("Insulin", p >> .insulin >> Number.Format.pretty 3 ',')
             ]
+
+checks =
+    [ (time 8 32, 142)
+    , (time 14 46, 265)
+    , (time 20 25, 179)
+    ]
+
+mapPairs : (a -> a -> b) -> List a -> List b
+mapPairs fn input =
+    let
+        step next (last,acc) =
+            case last of
+                Nothing -> (Just next,acc)
+                Just last' -> (Just next,(fn next last')::acc)
+    in
+        List.foldr step (Nothing,[]) input
+        |> snd
+
+checksView =
+    checks
+    |> mapPairs (\(ta,ga) (tb,gb) -> ((ga,gb),process config data ta tb))
+    |> Table.table
+        [ ("start BG", fst >> fst >> toString)
+        , ("end BG", fst >> snd >> toString)
+        , ("Food", snd >> .food >> Number.Format.pretty 1 ',')
+        , ("Insulin", snd >> .insulin >> Number.Format.pretty 3 ',')
+        ]
+
+main =
+    Html.div []
+        [ checksView
+        , hourlyView
+        ]
